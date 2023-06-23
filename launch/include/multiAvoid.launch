@@ -1,0 +1,12 @@
+<launch>
+	<arg name="slave_robot" default="tb3_1"/> 
+    <!-- <group ns="$(arg slave_robot)">
+        <node pkg="turtlebot_formation2" type="multi_avoidance" name="multi_avoidance" output="screen" />
+    </group> -->
+
+    <include file="$(find turtlebot_formation2)/launch/include/laserScan.launch">
+        <arg name="slave_robot" value="$(arg slave_robot)"/>
+
+    </include>
+
+</launch>
