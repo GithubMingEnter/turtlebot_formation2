@@ -50,7 +50,7 @@
   </include>  
 
   <group ns = "$(arg first_tb3)">
-    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=tb3_0" />
+    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot_formation2)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=tb3_0" />
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
       <param name="publish_frequency" type="double" value="50.0" />
@@ -61,7 +61,7 @@
   </group>
 
   <group ns = "$(arg second_tb3)">
-    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=tb3_1" />
+    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot_formation2)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=tb3_1" />
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
       <param name="publish_frequency" type="double" value="50.0" />
@@ -74,8 +74,8 @@
   </group>
 
   <group ns = "$(arg third_tb3)">
-    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=tb3_2" />
-
+    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot_formation2)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=tb3_2" />
+            
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
       <param name="publish_frequency" type="double" value="50.0" />
       <param name="tf_prefix" value="$(arg third_tb3)" />
@@ -85,7 +85,7 @@
   </group>
 
   <group ns = "$(arg 4th_tb3)">
-    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=tb3_2" />
+    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot_formation2)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=tb3_2" />
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
       <param name="publish_frequency" type="double" value="50.0" />
@@ -96,7 +96,7 @@
   </group>
 
     <group ns = "$(arg 5th_tb3)">
-    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=4th_tb3" />
+    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot_formation2)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=4th_tb3" />
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
       <param name="publish_frequency" type="double" value="50.0" />
@@ -107,7 +107,7 @@
   </group>
 
   <group ns = "$(arg 6th_tb3)">
-    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot3_description)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=tb3_2" />
+    <param name="robot_description" command="$(find xacro)/xacro $(find turtlebot_formation2)/urdf_user/gazebo_turtlebot3_$(arg model).urdf.xacro bodyframe:=tb3_2" />
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
       <param name="publish_frequency" type="double" value="50.0" />

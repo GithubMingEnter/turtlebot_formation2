@@ -1,4 +1,8 @@
+# 配置
+```bash
+echo 'export TURTLEBOT3_MODEL=waffle' >> ~/.bashrc
 
+```
 
 
 ## 本机编队导航
@@ -23,6 +27,9 @@ roslaunch turtlebot_formation2 hexagon.launch
 ROS_NAMESPACE=tb3_0 rosrun teleop_twist_keyboard teleop_twist_keyboard.py 
 
 ```
+### 三角形编队
+
+
 
 编队坐标修改
 

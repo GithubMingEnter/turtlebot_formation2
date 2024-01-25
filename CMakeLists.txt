@@ -41,9 +41,9 @@ catkin_package(
   CATKIN_DEPENDS stage stage_ros roscpp std_msgs geometry_msgs sensor_msgs nav_msgs
 #  DEPENDS system_lib
 )
-# include_directories(include ${catkin_INCLUDE_DIRS})
-# add_executable(leader src/leader.cpp)
-# target_link_libraries(leader ${catkin_LIBRARIES})
+include_directories(include ${catkin_INCLUDE_DIRS})
+add_executable(leader src/leader.cpp)
+target_link_libraries(leader ${catkin_LIBRARIES})
 
 
 add_executable(leader1 src/leader1.cpp)
