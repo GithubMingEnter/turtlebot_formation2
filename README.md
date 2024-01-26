@@ -27,6 +27,11 @@ roslaunch turtlebot_formation2 hexagon.launch
 ROS_NAMESPACE=tb3_0 rosrun teleop_twist_keyboard teleop_twist_keyboard.py 
 
 ```
+
+![Alt text](image.png)
+
+
+
 ### 三角形编队
 
 
@@ -53,6 +58,10 @@ X Error of failed request:  BadValue (integer parameter out of range for operati
   Current serial number in output stream:  32
 
 ```
+## instruction
+在进行编队时，机器人的定位采用的是gazebo的真值，通过p3d_base_controller插件获取，tf_broadcaster订阅并发布机器人与世界坐标的位姿关系，static_transform_publisher发布虚拟坐标，获取相对位姿，有了不同小车当前的动态目标点。
+
+
 
 
 ```
