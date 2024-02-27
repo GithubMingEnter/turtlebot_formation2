@@ -48,6 +48,19 @@ ROS_NAMESPACE=tb3_0 rosrun teleop_twist_keyboard teleop_twist_keyboard.py
 </group>
 ```
 
+## mpc运行
+
+仿真环境\
+`roslaunch turtlebot_formation2 All5_multi_turtlebot3.launch`
+
+编队 \
+`roslaunch turtlebot_formation2 hexagon_base.launch `
+
+控制\
+`roslaunch turtlebot_formation2 mpc_hexagon.launch`
+
+
+
 ## todo
 ```bash
 X Error of failed request:  BadValue (integer parameter out of range for operation)

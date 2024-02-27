@@ -1,0 +1,53 @@
+<launch>
+<arg name="first_tb3"  default="/tb3_0"/>
+<arg name="second_tb3" default="tb3_1"/>
+<arg name="third_tb3"  default="tb3_2"/>
+<arg name="multi_mode"  default="hexagon" doc="opt: upright, row, trangle, rectangle,hexagon"/>
+<arg name="run_way" default="3"/>
+<!-- 1 no navigation move directly 
+        2 navigation 
+        3 no navigation move by teleop-->
+
+  <node pkg="turtlebot_formation2" type="nmpc_leader"  name="nmpc_leader" output="screen">
+    <param name="mode" type="double" value="$(arg run_way)"/>
+  </node>
+  
+  <!-- <node pkg="turtlebot_formation2" type="slave_tf_listener"  name="slave2" >
+    <param name="cmd_vel" type="string" value="/tb3_1/cmd_vel"/>
+    <param name="base_frame" type="string" value="/slave1"/>
+    <param name="base_to_row" type="string" value="/tb3_1"/>
+    <param name="scan" type="string" value="/tb3_1/scan"/>
+  </node>
+
+  <node pkg="turtlebot_formation2" type="slave_tf_listener"  name="slave3"  >
+    <param name="cmd_vel" type="string" value="/tb3_2/cmd_vel"/>
+    <param name="base_frame" type="string" value="/slave2"/>
+    <param name="base_to_row" type="string" value="/tb3_2"/>
+    <param name="scan" type="string" value="/tb3_2/scan"/>
+  </node>
+
+  <node pkg="turtlebot_formation2" type="slave_tf_listener"  name="slave4"  >
+    <param name="cmd_vel" type="string" value="/tb3_3/cmd_vel"/>
+    <param name="base_frame" type="string" value="/slave3"/>
+    <param name="base_to_row" type="string" value="/tb3_3"/>
+    <param name="scan" type="string" value="/tb3_3/scan"/>
+  </node>
+
+  <node pkg="turtlebot_formation2" type="slave_tf_listener"  name="slave5"  >
+    <param name="cmd_vel" type="string" value="/tb3_4/cmd_vel"/>
+    <param name="base_frame" type="string" value="/slave4"/>
+    <param name="base_to_row" type="string" value="/tb3_4"/>
+    <param name="scan" type="string" value="/tb3_4/scan"/>
+  </node>
+
+  <node pkg="turtlebot_formation2" type="slave_tf_listener"  name="slave6" >
+    <param name="cmd_vel" type="string" value="/tb3_5/cmd_vel"/>
+    <param name="base_frame" type="string" value="/slave5"/>
+    <param name="base_to_row" type="string" value="/tb3_5"/>
+    <param name="scan" type="string" value="/tb3_5/scan"/>
+  </node>              -->
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find turtlebot_formation2)/rviz/multi_diffcar.rviz" />
+
+
+</launch>

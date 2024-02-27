@@ -1,75 +1,10 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "geometry_msgs/Twist.h"
-#include "sensor_msgs/LaserScan.h"
-#include "nav_msgs/Odometry.h"
-#include <sstream>
-#include <turtlebot_formation2/avoid.h>
-#include <turtlebot_formation2/position.h>
-#include "nmpc_ctrl.h"
+
+#include "nmpc_leader.h"
 // namespace Leader{
 static constexpr double PI=3.14;
 
-double intensities[27];
-double mul =1;
-double mode = 2;
 
 
-std::string cmd_vel;
-std::string scan;
-int winSize=2;
-double deltaDist=0.2;
-ros::Publisher velocity_publisher;
-ros::Publisher positionPublisher;
-class Leader{
-     ros::Subscriber laser ;
-     ros::NodeHandle LeaderNode;
-    ros::Subscriber current_position_sub; 
-    ros::NodeHandle node;
-   std:: vector<double> lastScan;
-    float angleX;    //障碍物方向
-    
-public:
-    float distanceO;    //障碍物距离
-    //Function declerations of move and rotate
-    void move(double speed, double distance, bool isForward);
-    void rotate (double angular_speed, double relative_angle, bool clockwise);
-
-    //Call back decleration for the laser messages
-    void laserCallBack(const sensor_msgs::LaserScan::ConstPtr & laser_msg);
-    void current_position_Callback(const turtlebot_formation2::position& msg);
-    int distance_judgment(void);
-    //Function declearations for equilidian distance and degrees to radians conversion
-    double getDistance(double x1, double y1, double x2, double y2);
-    double degrees2radians(double angle_in_degrees);
-    double radians2degrees(double degrees_in_angle);
-    //Wanader without bumping into obstacles 
-    void wander(void);
-
-     Leader(ros::NodeHandle& node):LeaderNode(node)
-    {
-          // this->laser = LeaderNode.subscribe<sensor_msgs::LaserScan>(scan, 1, &Leader::laserCallBack,this);//?
-        
-
-        ros::NodeHandle param("~");
-        param.param<std::string>("cmd_vel",cmd_vel,"/tb3_0/cmd_vel");
-        param.param<std::string>("scan",scan,"/tb3_0/scan");
-        param.param<double>("mode", mode,2);  
-        
-            //   param.param<double>("mode",mode,"1");
-        velocity_publisher = LeaderNode.advertise<geometry_msgs::Twist>(cmd_vel, 1000);
-        // laser = LeaderNode.subscribe<sensor_msgs::LaserScan>(scan, 1, &Leader::laserCallBack,this);//?
-        /***创建障碍物方位话题订阅者***/
-// "/tb3_0/object_tracker/current_position"
-// "/tb3_0/Obstacle_position"
-         current_position_sub = LeaderNode.subscribe("/tb3_0/object_tracker/current_position", 
-                                                                                                        3, &Leader::current_position_Callback,this);
-        // why can't point msg type <turtlebot_formation2::avoid>
-        // positionPublisher=LeaderNode.advertise<turtlebot_formation2::position>("/tb3_0/Obstacle_position",3);
-    
-    }
-
-};
 
 /**************************************************************************
 函数功能：判断障碍物距离是否小于0.75米
@@ -92,13 +27,7 @@ int Leader::distance_judgment(void)
 }
 
 
-void Leader::current_position_Callback(const turtlebot_formation2::position& msg)
-{
-    distanceO=msg.distance;
-    ROS_INFO("distance: [%f\n]",distanceO);
 
-    angleX=msg.angleX;
-}
 /**
  *  makes the robot move with a certain linear velocity, for 
  *  a certain distance either forward or backward  
@@ -294,19 +223,58 @@ void Leader::laserCallBack(const sensor_msgs::LaserScan::ConstPtr & laser_msg)
     // mul = mul*intensities[i]; //check point if robot is blocked 270 degrees
     // }
 }
+void Leader::goal_callback(const geometry_msgs::PoseStamped::ConstPtr& msg)
+{
+    double x=msg->pose.position.x;
+    double y=msg->pose.position.y;
+    tf::Quaternion quart;
+    tf::quaternionMsgToTF(msg->pose.orientation,quart);
+    double roll,pitch,yaw;
+    tf::Matrix3x3(quart).getRPY(roll,pitch,yaw);//)
+    goal_state_<<x,y,yaw;
+    nmpc_ptr->SetGoalStates(goal_state_);
 
+}
+
+void Leader::current_position_Callback(const nav_msgs::Odometry::ConstPtr& msg)
+{
+    std::cout<<"poseCallback"<<std::endl;
+    double x=msg->pose.pose.position.x;
+    double y=msg->pose.pose.position.y;
+    double vx=msg->twist.twist.linear.x;
+    double vy=msg->twist.twist.linear.y;
+    double w=msg->twist.twist.angular.z;
+
+    tf::Quaternion q;
+    double pitch,roll,yaw;
+    tf::Quaternion quat;
+    tf::quaternionMsgToTF(msg->pose.pose.orientation, quat);
+    tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+    cur_state_<<x,y,yaw,vx,vy,w;
+    start_state_<<x,y,yaw;
+}
+void Leader::run(){
+    ros::Rate loop_rate(frequence_);
+    geometry_msgs::Twist vel_msg;
+  while (LeaderNode.ok())//ros::ok()
+  {
+      nmpc_ptr->Optimize(start_state_);
+      Vec2d ctrlComman;
+      nmpc_ptr->ComputeCommand(ctrlComman);
+      vel_msg.linear.x=ctrlComman(0);
+      vel_msg.angular.z=ctrlComman(1);
+      velocity_publisher.publish(vel_msg);
+      ros::spinOnce();
+      loop_rate.sleep();
+  }
+}
 int main(int argc, char **argv)
 {
  
   ros::init(argc, argv, "nmpc_leader");
   ros::NodeHandle nh_leader;
-  ros::Rate loop_rate(100000);
-  while (nh_leader.ok())//ros::ok()
-  {
-
-      ros::spinOnce();
-      loop_rate.sleep();
-  }
+  Leader leader(nh_leader);
+  leader.run();
  
 
 

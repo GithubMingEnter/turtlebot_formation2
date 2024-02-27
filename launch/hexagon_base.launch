@@ -1,0 +1,43 @@
+<launch>
+<arg name="first_tb3"  default="/tb3_0"/>
+<arg name="second_tb3" default="tb3_1"/>
+<arg name="third_tb3"  default="tb3_2"/>
+<arg name="multi_mode"  default="hexagon" doc="opt: upright, row, trangle, rectangle,hexagon"/>
+<arg name="run_way" default="3"/>
+<!-- 1 no navigation move directly 
+        2 navigation 
+        3 no navigation move by teleop-->
+<group if="$(eval multi_mode=='trangle')">
+    <node pkg="tf" type="static_transform_publisher" name="base_to_slave1" args="-1 -1 0 0 0 0   $(arg first_tb3) slave1 100" />
+    <node pkg="tf" type="static_transform_publisher" name="base_to_slave2" args="-1  1 0 0 0 0   $(arg first_tb3) slave2 100" />
+</group>
+
+<group if="$(eval multi_mode=='hexagon')">
+    <node pkg="tf" type="static_transform_publisher" name="base_to_slave1" args="-1 -1 0 0 0 0   $(arg first_tb3) slave1 100" />
+    <node pkg="tf" type="static_transform_publisher" name="base_to_slave2" args="-1  1 0 0 0 0   $(arg first_tb3) slave2 100" />
+    <node pkg="tf" type="static_transform_publisher" name="base_to_slave3" args="-2  -1 0 0 0 0   $(arg first_tb3) slave3 100" />
+    <node pkg="tf" type="static_transform_publisher" name="base_to_slave4" args="-2  1 0 0 0 0   $(arg first_tb3) slave4 100" />
+    <node pkg="tf" type="static_transform_publisher" name="base_to_slave5" args="-3  0 0 0 0 0   $(arg first_tb3) slave5 100" />
+</group>
+
+<group if="$(eval multi_mode=='upright')">
+    <node pkg="tf" type="static_transform_publisher" name="base_to_slave1" args="-0.6  0.00 0 0 0 0   $(arg first_tb3) slave1 100" />
+    <node pkg="tf" type="static_transform_publisher" name="base_to_slave2" args="-1.2  0.00 0 0 0 0   $(arg first_tb3) slave2 100" />
+</group>
+    <node pkg="turtlebot_formation2" type="tf_broadcaster"
+                args="/tb3_0" name="tb3_0_tf_broadcaster" />
+  <node pkg="turtlebot_formation2" type="tf_broadcaster"
+                args="/tb3_1" name="tb3_1_tf_broadcaster" />
+  <node pkg="turtlebot_formation2" type="tf_broadcaster"
+                args="/tb3_2" name="tb3_2_tf_broadcaster" />
+  <node pkg="turtlebot_formation2" type="tf_broadcaster"
+                args="/tb3_3" name="tb3_3_tf_broadcaster" />
+  <node pkg="turtlebot_formation2" type="tf_broadcaster"
+                args="/tb3_4" name="tb3_4_tf_broadcaster" />
+  <node pkg="turtlebot_formation2" type="tf_broadcaster"
+                args="/tb3_5" name="tb3_5_tf_broadcaster" />                
+
+
+  
+
+</launch>

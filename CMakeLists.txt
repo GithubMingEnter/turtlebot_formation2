@@ -32,6 +32,7 @@ generate_messages(
 )
 include_directories(
   include
+  src/nmpc_ctrl
   include/${PROJECT_NAME}
   ${catkin_INCLUDE_DIRS}
 )
@@ -74,8 +75,8 @@ target_link_libraries(slave_tf_listener2 ${catkin_LIBRARIES})
 add_executable(slave_tf_listener3 src/slave_tf_listener3.cpp)
 target_link_libraries(slave_tf_listener3 ${catkin_LIBRARIES})
 
-add_executable(mpc_leader src/nmpc_ctrl/mpc_leader.cc)
-target_link_libraries(mpc_leader ${catkin_LIBRARIES} casadi)
+add_executable(nmpc_leader src/nmpc_ctrl/nmpc_leader.cc src/nmpc_ctrl/nmpc_ctrl.cc)
+target_link_libraries(nmpc_leader ${catkin_LIBRARIES} casadi)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
