@@ -24,7 +24,7 @@
     <node pkg="tf" type="static_transform_publisher" name="base_to_slave1" args="-0.6  0.00 0 0 0 0   $(arg first_tb3) slave1 100" />
     <node pkg="tf" type="static_transform_publisher" name="base_to_slave2" args="-1.2  0.00 0 0 0 0   $(arg first_tb3) slave2 100" />
 </group>
-    <node pkg="turtlebot_formation2" type="tf_broadcaster"
+  <node pkg="turtlebot_formation2" type="tf_broadcaster"
                 args="/tb3_0" name="tb3_0_tf_broadcaster" />
   <node pkg="turtlebot_formation2" type="tf_broadcaster"
                 args="/tb3_1" name="tb3_1_tf_broadcaster" />

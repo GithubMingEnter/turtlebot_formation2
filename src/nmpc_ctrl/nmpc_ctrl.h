@@ -7,7 +7,8 @@
 using dataT=double;
 using Vec3d=Eigen::Matrix<dataT,3,1>;
 using Vec2d=Eigen::Matrix<dataT,2,1>;
-
+using Vec2ds=std::vector<Vec2d>;
+using Vec3ds=std::vector<Vec3d>;
 struct mpc_param{
     dataT vMax;
     dataT vMin;
@@ -16,6 +17,9 @@ struct mpc_param{
     std::vector<dataT> Qvec;
     std::vector<dataT> Rvec;
     std::vector<dataT> Svec;
+    bool isObs=false;
+    dataT obsSoftRatio; 
+    
     void operator&=(const mpc_param& rhs )
     {
         vMax=rhs.vMax;
@@ -25,7 +29,10 @@ struct mpc_param{
         Qvec=rhs.Qvec;
         Rvec=rhs.Rvec;
         Svec=rhs.Svec;
+        isObs=rhs.isObs;
+        obsSoftRatio=rhs.obsSoftRatio;
     }
+
 };
 class NmpcPosCtrl
 {
@@ -44,6 +51,7 @@ private:
     casadi::Function mPreFun; // predict function
     std::map<std::string, casadi::DM> mRes; //solver result
     std::map<std::string , casadi::DM> mArgs;
+
     Eigen::Matrix<dataT,2,1> mCtrlCommand;
     std::vector<dataT> mLbx;
     std::vector<dataT> mUbx;
@@ -51,13 +59,17 @@ private:
     casadi::SX mRo;
     casadi::SX mSo;
     casadi::SX mInput_smoothness_cost;
+    casadi::SX mObsSoft_cost;
+    double mIgnoreDist;
+    Vec3ds obs_list;
     bool mIsWarmSt=true;
-
+    
 
 public: 
     NmpcPosCtrl(int preStep,dataT sampleTime,mpc_param& mpcParam);
     ~NmpcPosCtrl();
     void SetSolver();
+    inline void SetObs(Vec3ds& obsl){obs_list=obsl;};
     void SetGoalStates(Vec3d goalStates);
     void SetInput(double vmax,double vmin,double wmax,double wmin);
 
@@ -68,11 +80,10 @@ public:
     void ComputeCommand(Vec2d& command);
 
     void GetPreTraj(std::vector<Vec3d> & preTraj);
-    inline void  SetIsWarmSt(bool pd){
-        mIsWarmSt=pd;
-    }
+    inline void  SetIsWarmSt(bool pd){mIsWarmSt=pd;}
 
 private:
+    void addSoftObsCost(casadi::SX& X_);
     void addInputSmoothnessCost(casadi::SX& U_);
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

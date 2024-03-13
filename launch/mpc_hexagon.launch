@@ -10,6 +10,8 @@
 
   <node pkg="turtlebot_formation2" type="nmpc_leader"  name="nmpc_leader" output="screen">
     <param name="mode" type="double" value="$(arg run_way)"/>
+    <param name="isObs" type="bool" value="true"/>
+     <param name="obsSoftRatio" type="double" value= "16."/>
   </node>
   
   <!-- <node pkg="turtlebot_formation2" type="slave_tf_listener"  name="slave2" >

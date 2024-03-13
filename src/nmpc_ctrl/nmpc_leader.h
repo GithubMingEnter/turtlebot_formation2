@@ -13,6 +13,8 @@
 #include <turtlebot_formation2/position.h>
 #include "nmpc_ctrl.h"
 #include "EigenType.h"
+#include "vis_ros1.hpp"
+using namespace vis;
 double intensities[27];
 double mul =1;
 double mode = 2;
@@ -37,28 +39,31 @@ class Leader{
     Vec6d cur_state_;
 
     std:: vector<double> lastScan;
+    Vec3ds preTraj_;
+    Vec3ds obs_list;
     float angleX;    //障碍物方向
     double frequence_=10;
-    std::shared_ptr<NmpcPosCtrl> nmpc_ptr;
+    mpc_param mpcParam_;
+    std::shared_ptr<NmpcPosCtrl> nmpc_ptr_;
+    std::shared_ptr<displayRviz> vis_ptr_;
+
+    std::mutex lock_vis_;
+    std::thread vis_thread_;
     
 public:
-    float distanceO;    //障碍物距离
+    
 
-    //Function declerations of move and rotate
-    void move(double speed, double distance, bool isForward);
-    void rotate (double angular_speed, double relative_angle, bool clockwise);
 
     //Call back decleration for the laser messages
     void laserCallBack(const sensor_msgs::LaserScan::ConstPtr & laser_msg);
     void current_position_Callback(const nav_msgs::Odometry::ConstPtr& msg);
-    int distance_judgment(void);
+
     //Function declearations for equilidian distance and degrees to radians conversion
     double getDistance(double x1, double y1, double x2, double y2);
     double degrees2radians(double angle_in_degrees);
     double radians2degrees(double degrees_in_angle);
-    
-    //Wanader without bumping into obstacles 
-    void wander(void);
+    void visualize();
+
     void run();
     void goal_callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
     Leader(ros::NodeHandle& node):LeaderNode(node)
@@ -69,29 +74,42 @@ public:
         param.param<std::string>("cmd_vel",cmd_vel,"/tb3_0/cmd_vel");
         param.param<std::string>("scan",scan,"/tb3_0/scan");
         param.param<double>("mode", mode,2);  
-        
+        param.param<bool>("isObs",mpcParam_.isObs,true);
+        param.param<double>("obsSoftRatio",mpcParam_.obsSoftRatio,10);
+        obs_list=Vec3ds{Vec3d(1,1,0.3),Vec3d(-2,-2,1),Vec3d(3,3,0.3)};
             //   param.param<double>("mode",mode,"1");
         velocity_publisher = LeaderNode.advertise<geometry_msgs::Twist>(cmd_vel, 1000);
         PrePath_pub_=LeaderNode.advertise<nav_msgs::Path>("/tb3_0/pre_path",100);
         // laser = LeaderNode.subscribe<sensor_msgs::LaserScan>(scan, 1, &Leader::laserCallBack,this);//?
-        /***创建障碍物方位话题订阅者***/
-    // "/tb3_0/object_tracker/current_position"
-    // "/tb3_0/Obstacle_position"
+
         current_position_sub = LeaderNode.subscribe("/tb3_0/base_pose_ground_truth", 3, &Leader::current_position_Callback,this);
         goalSub_= LeaderNode.subscribe("/move_base_simple/goal",100,&Leader::goal_callback,this);
                                                                                                 
         // why can't point msg type <turtlebot_formation2::avoid>
         // positionPublisher=LeaderNode.advertise<turtlebot_formation2::position>("/tb3_0/Obstacle_position",3);
+        
+        vis_ptr_=std::make_shared<displayRviz>(LeaderNode);
+        vis_ptr_->enroll<vMarker>("obs_list");
+        vis_ptr_->enroll<nav_msgs::Path>("pre_path");
+
         int predict_step = 60;
         float sample_time=1/frequence_;
-        mpc_param mMpcParam;
-        mMpcParam.Qvec=std::vector<double>{3.6,6.9,0.8};//Y:1.6 1.5
-        mMpcParam.Rvec=std::vector<double>{0.5,0.09};
-        mMpcParam.Svec=std::vector<double>{1,3};
-        nmpc_ptr=std::make_shared<NmpcPosCtrl>(predict_step, sample_time,mMpcParam);
-        nmpc_ptr-> SetSolver();
-        nmpc_ptr->SetInput(0.3,-0.3,M_PI/4,-M_PI/4);
+
+
+        mpcParam_.Qvec=std::vector<double>{3.6,6.9,0.8};//Y:1.6 1.5
+        mpcParam_.Rvec=std::vector<double>{0.5,0.09};
+        mpcParam_.Svec=std::vector<double>{1,3};
+        nmpc_ptr_=std::make_shared<NmpcPosCtrl>(predict_step, sample_time,mpcParam_);
+        nmpc_ptr_->SetObs(obs_list);
+        nmpc_ptr_-> SetSolver();
+        nmpc_ptr_->SetInput(0.3,-0.3,M_PI/4,-M_PI/4);
+
+        vis_thread_=std::thread(&Leader::visualize,this);
     }
-    ~Leader(){};
+    ~Leader(){
+        if(vis_thread_.joinable())
+            vis_thread_.join();
+
+    };
 
 };

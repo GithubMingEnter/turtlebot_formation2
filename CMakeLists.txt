@@ -7,6 +7,7 @@ project(turtlebot_formation2)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+set(CMAKE_BUILD_TYPE "Debug")
 find_package(catkin REQUIRED COMPONENTS
 stage_ros
   geometry_msgs
@@ -15,6 +16,7 @@ stage_ros
   rospy
   std_msgs
   sensor_msgs
+  pcl_ros
   tf
 )
 

@@ -11,7 +11,8 @@ NmpcPosCtrl::NmpcPosCtrl(int preStep, dataT sampleTime,mpc_param& mpcParam)
     mStates = 3;
     mOutputs = 2;
     mGoalState = Vec3d::Zero();
-    // mInitialGuess.resize(mPredictStep*mOutputs, 0); //note
+    mObsSoft_cost=0;    // mInitialGuess.resize(mPredictStep*mOutputs, 0); //note
+
     for(int i=0;i<mPredictStep;i++){
             mInitialGuess.push_back(0);
             mInitialGuess.push_back(0);
@@ -107,7 +108,7 @@ void NmpcPosCtrl::Set_CAM_nmpc_solver(){
                    casadi::SX::mtimes({controls_err.T(), mRo, controls_err});
     }
     addInputSmoothnessCost(U);
-    cost_fun=cost_fun+mInput_smoothness_cost;
+    
     std::cout<<"build solver"<<std::endl;
     // build solver
     // note map relationship
@@ -197,7 +198,9 @@ void NmpcPosCtrl::SetSolver()
                    casadi::SX::mtimes({controls_err.T(), mRo, controls_err});
     }
     addInputSmoothnessCost(U);
-    cost_fun=cost_fun+mInput_smoothness_cost;
+    if(mParas.isObs)
+        addSoftObsCost(X);
+    cost_fun=cost_fun+mInput_smoothness_cost+mObsSoft_cost;
     std::cout<<"build solver"<<std::endl;
     // build solver
     // note map relationship
@@ -219,6 +222,20 @@ void NmpcPosCtrl::SetSolver()
     std::cout<<"cal cost function"<<std::endl;
 
 }
+void NmpcPosCtrl::addSoftObsCost(casadi::SX& X_)
+{
+    casadi::SX matrix=casadi::SX(mPredictStep,2);
+    for (int i = 0; i < mPredictStep; ++i)
+    {
+        for(int j=0;j<obs_list.size();j++){
+            casadi::SX tmp_sx=casadi::SX::vertcat({obs_list[j].x(),obs_list[j].y()});
+            
+            casadi::SX dist=(X_(casadi::Slice(0,2,1),i)-tmp_sx);
+            mObsSoft_cost+=mParas.obsSoftRatio/casadi::SX::mtimes(dist.T(),dist);
+        }
+    }
+}
+
 
 void NmpcPosCtrl::addInputSmoothnessCost(casadi::SX& U_)
 {
@@ -267,6 +284,7 @@ void NmpcPosCtrl::Optimize(Vec3d &curStates)
     // std::cout<<"solution: " <<mRes.at("x")<<std::endl;
     // get optimal variable
     std::vector<dataT> resControlAll(mRes.at("x"));
+    
     std::vector<dataT> resControlV, resControlW;
     resControlV.assign(resControlAll.begin(), resControlAll.begin() + mPredictStep);
     // note no resControlAll.end()

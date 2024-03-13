@@ -22,7 +22,7 @@ void poseCallback(const nav_msgs::Odometry::ConstPtr& msg)
 
     q.setRPY(0.0, 0.0 , yaw);//only yaw
     tfTrans.setRotation(q);
-    TfBroad.sendTransform(tf::StampedTransform(tfTrans, ros::Time::now(), "world" , robot_name));
+    TfBroad.sendTransform(tf::StampedTransform(tfTrans, ros::Time::now(), "map" , robot_name));
     
 }
 
@@ -36,7 +36,8 @@ int main(int argc, char** argv)
     robot_name=argv[1];
     std::cout<<robot_name<<std::endl;
     ros::NodeHandle nh;
-    ros::Subscriber sub=nh.subscribe(robot_name + "/base_pose_ground_truth", 10 , &poseCallback);
+    ros::Subscriber sub=nh.subscribe(robot_name + "/odom", 10 , &poseCallback);
+    // ros::Subscriber sub=nh.subscribe(robot_name + "/base_pose_ground_truth", 10 , &poseCallback);
 
     ros::spin();
     return 0;
