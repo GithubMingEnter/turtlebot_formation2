@@ -18,6 +18,7 @@ stage_ros
   sensor_msgs
   pcl_ros
   tf
+  laser_geometry
 )
 
 add_message_files(
@@ -35,6 +36,7 @@ generate_messages(
 include_directories(
   include
   src/nmpc_ctrl
+  src/esdf_map
   include/${PROJECT_NAME}
   ${catkin_INCLUDE_DIRS}
 )
@@ -80,7 +82,13 @@ target_link_libraries(slave_tf_listener3 ${catkin_LIBRARIES})
 add_executable(nmpc_leader src/nmpc_ctrl/nmpc_leader.cc src/nmpc_ctrl/nmpc_ctrl.cc)
 target_link_libraries(nmpc_leader ${catkin_LIBRARIES} casadi)
 
-## System dependencies are found with CMake's conventions
+
+add_executable(fusion_esdf_node src/esdf_map/fusion_esdf_node.cc 
+                              src/esdf_map/fusion_esdf.cc )
+target_link_libraries(fusion_esdf_node ${catkin_LIBRARIES})
+
+
+                              ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
 

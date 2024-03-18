@@ -1,0 +1,37 @@
+obstacles_inflation: &obstacles_inflation 0.20
+# simulator  
+local_map/odom: odom
+local_map/odom_carto: odom
+local_map/frame_id: map
+local_map/base_id: base_link
+local_map/pointcloud_sensor_frame_id: camera_depth_optical_frame
+local_map/scan_sensor_frame_id: base_scan
+sensor/cam_topic: /camera/depth/points_downsampled
+sensor/scan_topic: /scan
+
+#esdf_map/resolution: 0.05
+local_map/use_occ_esdf: true
+
+# inflations (meter)
+local_map/obstacles_inflation: *obstacles_inflation
+
+# occupancy generation
+local_map/local_update_range_min_x: -1.5
+local_map/local_update_range_max_x: 8.0
+local_map/local_update_range_min_y: -4.0
+local_map/local_update_range_max_y: 4.0
+local_map/p_hit: 0.52
+local_map/p_miss: 0.15
+local_map/p_min: 0.10
+local_map/p_max: 0.75
+local_map/p_occ: 0.70
+
+# local map margin for cell/index
+local_map/esdf_map_margin: 0 
+
+# performance test
+local_map/show_occ_time: false
+local_map/show_esdf_time: false
+
+
+

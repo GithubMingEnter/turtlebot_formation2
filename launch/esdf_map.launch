@@ -1,0 +1,24 @@
+<launch>
+    <arg name="odom_topic" default="/odom" />   
+    <arg name="pointcloud_topic" default="/camera/depth/points_downsampled" />
+    <arg name="scan_topic" default="/scan" />
+    <arg name="goal_topic" default="/move_base_simple/goal" />
+    <arg name="enable_simulator" default="true"/>
+    <node pkg="turtlebot_formation2" name="fusion_esdf" type="fusion_esdf_node" output="screen">
+        <!-- plan fsm -->
+        <rosparam file="$(find turtlebot_formation2)/config/plan_params.yaml" command="load" /> 
+        <remap from ="local_map/odometry/state_estimation" to="$(arg odom_topic)"/>
+        <remap from ="local_map/pointcloud" to="$(arg pointcloud_topic)"/>
+        <remap from ="local_map/scan" to="$(arg scan_topic)"/>
+        
+        <param name="local_map/use_occ_esdf"   value="true"/>
+        <param name="local_map/show_esdf_time"  value="false"/>
+        <param name="local_map/show_occ_time"  value="false"/>
+        
+    </node>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot_formation2)/rviz/local_map_test.rviz" required="true"
+     if="$(arg enable_simulator)" >
+     </node>
+</launch> 
+
+
