@@ -33,7 +33,7 @@ void FusionMap::initMap(ros::NodeHandle &nh)
 
     node_.param("local_map/frame_id", mp_.frame_id_, std::string("map"));
     node_.param("local_map/base_id", mp_.base_id_, std::string("base_footprint"));
-    node_.param("local_map/pointcloud_sensor_frame_id", mp_.pointcloud_sensor_frame_id_, std::string("base_link"));
+    node_.param("local_map/pointcloud_sensor_frame_id", mp_.pointcloud_sensor_frame_id_, std::string("base_foot_link"));
     node_.param("local_map/scan_sensor_frame_id", mp_.scan_sensor_frame_id_, std::string("base_scan"));
 
 

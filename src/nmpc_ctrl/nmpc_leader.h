@@ -14,14 +14,17 @@
 #include "nmpc_ctrl.h"
 #include "EigenType.h"
 #include "vis_ros1.hpp"
+#include "fusion_esdf.h"
+
 using namespace vis;
 double intensities[27];
 double mul =1;
 double mode = 2;
 
-
+std::string pre_path;
 std::string cmd_vel;
 std::string scan;
+std::string odom;
 int winSize=2;
 double deltaDist=0.2;
 ros::Publisher velocity_publisher;
@@ -46,9 +49,11 @@ class Leader{
     mpc_param mpcParam_;
     std::shared_ptr<NmpcPosCtrl> nmpc_ptr_;
     std::shared_ptr<displayRviz> vis_ptr_;
+    FusionMap::Ptr grid_map_;
 
     std::mutex lock_vis_;
     std::thread vis_thread_;
+    double dist_soft_;
     
 public:
     
@@ -73,16 +78,20 @@ public:
         ros::NodeHandle param("~");
         param.param<std::string>("cmd_vel",cmd_vel,"/tb3_0/cmd_vel");
         param.param<std::string>("scan",scan,"/tb3_0/scan");
+        param.param<std::string>("odom",odom,"/tb3_0/base_pose_ground_truth");
+        param.param<std::string>("pre_path",pre_path,"/tb3_0/pre_path");
+
         param.param<double>("mode", mode,2);  
         param.param<bool>("isObs",mpcParam_.isObs,true);
         param.param<double>("obsSoftRatio",mpcParam_.obsSoftRatio,10);
+        param.param("optimization_ESDF/dist0", dist_soft_, 0.4);
         obs_list=Vec3ds{Vec3d(1,1,0.3),Vec3d(-2,-2,1),Vec3d(3,3,0.3)};
             //   param.param<double>("mode",mode,"1");
         velocity_publisher = LeaderNode.advertise<geometry_msgs::Twist>(cmd_vel, 1000);
         PrePath_pub_=LeaderNode.advertise<nav_msgs::Path>("/tb3_0/pre_path",100);
         // laser = LeaderNode.subscribe<sensor_msgs::LaserScan>(scan, 1, &Leader::laserCallBack,this);//?
 
-        current_position_sub = LeaderNode.subscribe("/tb3_0/base_pose_ground_truth", 3, &Leader::current_position_Callback,this);
+        current_position_sub = LeaderNode.subscribe(odom, 3, &Leader::current_position_Callback,this);
         goalSub_= LeaderNode.subscribe("/move_base_simple/goal",100,&Leader::goal_callback,this);
                                                                                                 
         // why can't point msg type <turtlebot_formation2::avoid>
@@ -91,6 +100,9 @@ public:
         vis_ptr_=std::make_shared<displayRviz>(LeaderNode);
         vis_ptr_->enroll<vMarker>("obs_list");
         vis_ptr_->enroll<nav_msgs::Path>("pre_path");
+
+        grid_map_ = std::make_shared<FusionMap>();
+        grid_map_->initMap(param);
 
         int predict_step = 60;
         float sample_time=1/frequence_;
@@ -103,6 +115,8 @@ public:
         nmpc_ptr_->SetObs(obs_list);
         nmpc_ptr_-> SetSolver();
         nmpc_ptr_->SetInput(0.3,-0.3,M_PI/4,-M_PI/4);
+        nmpc_ptr_->setFusionMap(grid_map_);
+        nmpc_ptr_->setIgnoreDist(dist_soft_);
 
         vis_thread_=std::thread(&Leader::visualize,this);
     }

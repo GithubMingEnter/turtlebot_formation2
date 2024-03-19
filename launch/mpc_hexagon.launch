@@ -9,9 +9,12 @@
         3 no navigation move by teleop-->
 
   <node pkg="turtlebot_formation2" type="nmpc_leader"  name="nmpc_leader" output="screen">
+    <rosparam file="$(find turtlebot_formation2)/config/plan_params.yaml" command="load" /> 
     <param name="mode" type="double" value="$(arg run_way)"/>
     <param name="isObs" type="bool" value="true"/>
-     <param name="obsSoftRatio" type="double" value= "16."/>
+    <param name="obsSoftRatio" type="double" value= "16."/>
+    <param name="cmd_vel" type="string" value= "/cmd_vel"/>
+    <param name="odom" type="string" value= "/odom"/>
   </node>
   
   <!-- <node pkg="turtlebot_formation2" type="slave_tf_listener"  name="slave2" >

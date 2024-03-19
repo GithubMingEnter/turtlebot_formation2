@@ -48,6 +48,10 @@ catkin_package(
 )
 include_directories(include ${catkin_INCLUDE_DIRS})
 
+add_library(fusion_esdf src/esdf_map/fusion_esdf.cc)
+target_link_libraries(fusion_esdf ${catkin_LIBRARIES})
+
+
 add_executable(leader src/leader.cpp)
 target_link_libraries(leader ${catkin_LIBRARIES})
 
@@ -80,7 +84,7 @@ add_executable(slave_tf_listener3 src/slave_tf_listener3.cpp)
 target_link_libraries(slave_tf_listener3 ${catkin_LIBRARIES})
 
 add_executable(nmpc_leader src/nmpc_ctrl/nmpc_leader.cc src/nmpc_ctrl/nmpc_ctrl.cc)
-target_link_libraries(nmpc_leader ${catkin_LIBRARIES} casadi)
+target_link_libraries(nmpc_leader ${catkin_LIBRARIES} casadi fusion_esdf)
 
 
 add_executable(fusion_esdf_node src/esdf_map/fusion_esdf_node.cc 

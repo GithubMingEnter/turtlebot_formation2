@@ -2,7 +2,7 @@
 #include <casadi/casadi.hpp>
 #include<iostream>
 #include<eigen3/Eigen/Dense>
-
+#include "fusion_esdf.h"
 
 using dataT=double;
 using Vec3d=Eigen::Matrix<dataT,3,1>;
@@ -19,6 +19,7 @@ struct mpc_param{
     std::vector<dataT> Svec;
     bool isObs=false;
     dataT obsSoftRatio; 
+    dataT dist_soft_;
     
     void operator&=(const mpc_param& rhs )
     {
@@ -60,6 +61,8 @@ private:
     casadi::SX mSo;
     casadi::SX mInput_smoothness_cost;
     casadi::SX mObsSoft_cost;
+    FusionMap::Ptr mGridMap;
+    casadi::SX mdistSX;
     double mIgnoreDist;
     Vec3ds obs_list;
     bool mIsWarmSt=true;
@@ -81,6 +84,8 @@ public:
 
     void GetPreTraj(std::vector<Vec3d> & preTraj);
     inline void  SetIsWarmSt(bool pd){mIsWarmSt=pd;}
+    inline void setFusionMap(const FusionMap::Ptr &env){mGridMap=env;}
+    inline void setIgnoreDist(const double &dist){mIgnoreDist=dist;}
 
 private:
     void addSoftObsCost(casadi::SX& X_);

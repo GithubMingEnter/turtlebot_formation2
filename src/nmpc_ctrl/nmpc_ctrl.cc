@@ -17,7 +17,6 @@ NmpcPosCtrl::NmpcPosCtrl(int preStep, dataT sampleTime,mpc_param& mpcParam)
             mInitialGuess.push_back(0);
             mInitialGuess.push_back(0);
         } 
-    
 }
 NmpcPosCtrl::~NmpcPosCtrl()
 {
@@ -197,6 +196,7 @@ void NmpcPosCtrl::SetSolver()
         cost_fun = cost_fun + casadi::SX::mtimes({states_err.T(), mQs, states_err}) +
                    casadi::SX::mtimes({controls_err.T(), mRo, controls_err});
     }
+    mdistSX=X;
     addInputSmoothnessCost(U);
     if(mParas.isObs)
         addSoftObsCost(X);
@@ -227,12 +227,23 @@ void NmpcPosCtrl::addSoftObsCost(casadi::SX& X_)
     casadi::SX matrix=casadi::SX(mPredictStep,2);
     for (int i = 0; i < mPredictStep; ++i)
     {
-        for(int j=0;j<obs_list.size();j++){
-            casadi::SX tmp_sx=casadi::SX::vertcat({obs_list[j].x(),obs_list[j].y()});
+/*         for(int j=0;j<obs_list.size();j++){
+            // casadi::SX tmp_sx=casadi::SX::vertcat({obs_list[j].x(),obs_list[j].y()});
             
-            casadi::SX dist=(X_(casadi::Slice(0,2,1),i)-tmp_sx);
-            mObsSoft_cost+=mParas.obsSoftRatio/casadi::SX::mtimes(dist.T(),dist);
-        }
+            // casadi::SX dist=(X_(casadi::Slice(0,2,1),i)-tmp_sx);
+            // mObsSoft_cost+=mParas.obsSoftRatio/casadi::SX::mtimes(dist.T(),dist);
+            double dist=0;
+            
+            Eigen::Vector2d pos;//=Vec2d(X_(casadi::Slice(0,2,1),i)(0),X_(casadi::Slice(0,2,1),i)(1));
+            casadi::DM dm_xy(X_(casadi::Slice(0,2,1),i));
+            std::vector<double> vec_xy(dm_xy);
+            pos(0)=vec_xy[0];pos(1)=vec_xy[1];
+            Eigen::Vector2d grad;
+            mGridMap->evaluateEDTWithGrad(pos,dist,grad);
+            casadi::SX distSX=casadi::SX(dist);
+    
+        } */
+        mObsSoft_cost +=casadi::SX::mtimes(mdistSX(i),mdistSX(i));
     }
 }
 
@@ -316,13 +327,37 @@ void NmpcPosCtrl::Optimize(Vec3d &curStates)
     std::cout<<"mCtrlCommand = "<<mCtrlCommand<<std::endl;
     std::vector<Vec3d> predictX;
     predictX.push_back(curStates);
-    for (int j = 0; j < mPredictStep; j++)
+     mdistSX.clear();
+     
+    for (int j = 0; j <=  mPredictStep; j++)
     {
         Vec3d NextX;
         NextX << mSampleTime * resControlV[j] * std::cos(predictX[j](2)) + predictX[j](0),
             mSampleTime * resControlV[j] * std::sin(predictX[j](2)) + predictX[j](1),
             mSampleTime * resControlW[j] + predictX[j](2);
-        predictX.push_back(NextX);
+        if(j<mPredictStep)
+           predictX.push_back(NextX);
+        if(j>0)
+        {
+            Eigen::Vector2d pos=NextX.head(2);
+            Eigen::Vector2d grad;
+            double dist=0;
+            mGridMap->evaluateEDTWithGrad(pos,dist,grad);
+            if(dist>mIgnoreDist)
+            {
+                dist = 0;
+                grad=Vec2d::Zero();
+            }
+            else{
+                dist=dist-mIgnoreDist;
+            }
+
+            casadi::SX sx_value = casadi::SX(dist);
+            mdistSX=casadi::SX::vertcat({mdistSX,sx_value});
+            
+        }
+        
+
     }
     mPreTraj = predictX;
 }
